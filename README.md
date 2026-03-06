@@ -1,36 +1,257 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Task SaaS 🧠 — full-stack платформа управления проектами (Next.js + Prisma + PostgreSQL)
 
-## Getting Started
+## 🌍 Production / Vercel
 
-First, run the development server:
+**Сайт в проде:**
+https://saa-s-task-management-platform.vercel.app
+
+Деплой выполнен на **Vercel**, приложение доступно по ссылке с любого устройства.
+
+---
+
+# 🚀 Деплой и инфраструктура
+
+* **Hosting / Serverless:** Vercel (Next.js App Router)
+* **Database:** PostgreSQL (Neon)
+* **ORM:** Prisma
+* **Auth:** NextAuth
+* **Styling:** TailwindCSS
+* **Frontend:** React + Next.js 16
+
+---
+
+# 🧠 Функциональность платформы
+
+## 👤 Авторизация
+
+Поддерживается полноценная система аккаунтов:
+
+* регистрация пользователя
+* вход в аккаунт
+* защищённые страницы
+* серверная проверка сессии
+
+Если пользователь:
+
+* **не авторизован** → редирект на `/login`
+* **авторизован** → доступ к `/dashboard`
+
+---
+
+# 📊 Dashboard
+
+После входа пользователь попадает в **Dashboard**, где отображается:
+
+* количество пользователей
+* количество проектов
+* количество задач
+
+Dashboard получает данные напрямую из базы данных через Prisma.
+
+---
+
+# 📁 Проекты
+
+Пользователь может:
+
+* создавать проекты
+* просматривать список проектов
+* добавлять участников
+* управлять проектами
+
+Каждый проект связан с владельцем и участниками.
+
+---
+
+# 📋 Задачи
+
+Каждый проект может содержать задачи.
+
+Функциональность задач:
+
+* создание задачи
+* назначение пользователя
+* изменение статуса
+* привязка к проекту
+
+---
+
+# 👥 Участники проекта
+
+Система **Project Members** позволяет:
+
+* добавлять пользователей в проект
+* назначать роли
+* управлять участниками
+
+---
+
+# 🧱 Архитектура проекта
+
+```text
+src/
+ ├── app/
+ │   ├── (auth)/
+ │   │    ├── login
+ │   │    └── register
+ │   │
+ │   ├── dashboard
+ │   ├── projects
+ │   ├── tasks
+ │   └── page.tsx
+ │
+ ├── features/
+ │   ├── auth
+ │   ├── projects
+ │   └── tasks
+ │
+ ├── shared/
+ │   ├── db
+ │   ├── lib
+ │   └── ui
+ │
+prisma/
+ ├── schema.prisma
+ └── seed.ts
+```
+
+---
+
+# 🗄 База данных
+
+Основные таблицы:
+
+* **User**
+* **Project**
+* **Task**
+* **ProjectMember**
+
+Связи:
+
+```
+User
+ ├── Projects (owner)
+ ├── Tasks
+ └── ProjectMembers
+
+Project
+ ├── Tasks
+ └── ProjectMembers
+
+Task
+ ├── Project
+ └── Assigned User
+```
+
+ORM: **Prisma**
+
+---
+
+# ⚙️ Переменные окружения
+
+Файл `.env`:
+
+```
+DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE"
+
+NEXTAUTH_SECRET="secret"
+NEXTAUTH_URL="http://localhost:3000"
+```
+
+Production использует **Neon PostgreSQL**.
+
+---
+
+# 📦 Установка проекта
+
+Клонировать репозиторий:
+
+```bash
+git clone https://github.com/S7ikeCat/SaaS-task-management-platform
+cd SaaS-task-management-platform
+```
+
+Установить зависимости:
+
+```bash
+npm install
+```
+
+Сгенерировать Prisma Client:
+
+```bash
+npx prisma generate
+```
+
+Применить миграции:
+
+```bash
+npx prisma migrate dev
+```
+
+Запуск проекта:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# ☁️ Деплой
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Проект задеплоен через **Vercel**.
 
-## Learn More
+Процесс деплоя:
 
-To learn more about Next.js, take a look at the following resources:
+1. Репозиторий загружается на GitHub
+2. Импортируется в Vercel
+3. Добавляются ENV переменные
+4. Выполняется билд
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Необходимые ENV для Vercel:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+DATABASE_URL
+NEXTAUTH_SECRET
+NEXTAUTH_URL
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 🖼 Скриншоты
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Dashboard
+
+![Dashboard](./screenshots/dashboard.png)
+
+---
+
+### Project
+
+![Project](./screenshots/project.png)
+
+---
+
+# 📌 Дополнительная информация
+
+* Prisma Client генерируется автоматически (`postinstall`)
+* база данных размещена в **Neon**
+* проект использует **Next.js App Router**
+* backend и frontend работают в одном приложении
+
+---
+
+# ✅ Итог
+
+Это полноценное full-stack SaaS приложение, включающее:
+
+* систему авторизации
+* управление проектами
+* управление задачами
+* работу с пользователями
+* серверную архитектуру Next.js
+* PostgreSQL + Prisma
+* облачный деплой на Vercel
+
+Production:
+https://saa-s-task-management-platform.vercel.app
