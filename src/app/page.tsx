@@ -1,20 +1,14 @@
-import { prisma } from "@/shared/lib/prisma"
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
 
-export default async function Home() {
+import { authConfig } from "@/features/auth/model/auth.config";
 
-  const users = await prisma.user.count()
-  const projects = await prisma.project.count()
-  const tasks = await prisma.task.count()
+export default async function HomePage() {
+  const session = await getServerSession(authConfig);
 
-  return (
-    <main className="p-10">
-      <h1 className="text-3xl font-bold">Task SaaS</h1>
+  if (session?.user?.email) {
+    redirect("/dashboard");
+  }
 
-      <div className="mt-6 space-y-2">
-        <p>Users: {users}</p>
-        <p>Projects: {projects}</p>
-        <p>Tasks: {tasks}</p>
-      </div>
-    </main>
-  )
+  redirect("/login");
 }
