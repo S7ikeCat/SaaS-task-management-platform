@@ -75,20 +75,46 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
       order: "asc",
     },
   });
-
-  const tasksByStatus = {
-    TODO: tasks.filter((t) => t.status === "TODO").length,
-    IN_PROGRESS: tasks.filter((t) => t.status === "IN_PROGRESS").length,
-    REVIEW: tasks.filter((t) => t.status === "REVIEW").length,
-    DONE: tasks.filter((t) => t.status === "DONE").length,
-  };
   
-  const overdueTasks = tasks.filter(
-    (task) =>
-      task.dueDate &&
-      new Date(task.dueDate) < new Date() &&
-      task.status !== "DONE"
-  ).length;
+  const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+const tomorrow = new Date(today);
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+const tasksByStatus = {
+  TODO: tasks.filter((t) => t.status === "TODO").length,
+  IN_PROGRESS: tasks.filter((t) => t.status === "IN_PROGRESS").length,
+  REVIEW: tasks.filter((t) => t.status === "REVIEW").length,
+  DONE: tasks.filter((t) => t.status === "DONE").length,
+};
+
+const overdueTasks = tasks.filter((task) => {
+  if (!task.dueDate || task.status === "DONE") return false;
+
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+
+  return dueDate < today;
+}).length;
+
+const dueTodayTasks = tasks.filter((task) => {
+  if (!task.dueDate || task.status === "DONE") return false;
+
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+
+  return dueDate.getTime() === today.getTime();
+}).length;
+
+const dueTomorrowTasks = tasks.filter((task) => {
+  if (!task.dueDate || task.status === "DONE") return false;
+
+  const dueDate = new Date(task.dueDate);
+  dueDate.setHours(0, 0, 0, 0);
+
+  return dueDate.getTime() === tomorrow.getTime();
+}).length;
 
   return (
     <main className="p-10 space-y-8">
@@ -111,7 +137,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
 <section className="rounded-xl border p-5 space-y-4">
   <h2 className="text-2xl font-semibold">Project analytics</h2>
 
-  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+  <div className="grid grid-cols-2 md:grid-cols-7 gap-4 text-center">
 
     <div className="rounded-lg border p-3">
       <p className="text-sm text-gray-500">To Do</p>
@@ -131,6 +157,16 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
     <div className="rounded-lg border p-3">
       <p className="text-sm text-gray-500">Done</p>
       <p className="text-xl font-semibold">{tasksByStatus.DONE}</p>
+    </div>
+
+    <div className="rounded-lg border p-3">
+      <p className="text-sm text-yellow-400">Due today</p>
+      <p className="text-xl font-semibold">{dueTodayTasks}</p>
+    </div>
+
+    <div className="rounded-lg border p-3">
+      <p className="text-sm text-blue-400">Due tomorrow</p>
+      <p className="text-xl font-semibold">{dueTomorrowTasks}</p>
     </div>
 
     <div className="rounded-lg border p-3 border-red-400">
@@ -203,6 +239,7 @@ export default async function ProjectDetailsPage({ params }: PageProps) {
   projectId={project.id}
   members={members}
   isOwner={isOwner}
+  currentUserId={user.id}
 />
       </section>
     </main>

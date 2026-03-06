@@ -3,7 +3,10 @@ import { getServerSession } from "next-auth";
 
 import { authConfig } from "@/features/auth/model/auth.config";
 import { prisma } from "@/shared/lib/prisma";
-import { updateTaskSchema } from "@/shared/lib/validations/task";
+import {
+  updateTaskSchema,
+  updateTaskStatusSchema,
+} from "@/shared/lib/validations/task";
 
 type RouteContext = {
   params: Promise<{
@@ -45,11 +48,12 @@ export async function PATCH(req: Request, context: RouteContext) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  if (project.ownerId !== currentUser.id) {
-    return NextResponse.json(
-      { error: "Only the project owner can edit tasks" },
-      { status: 403 }
-    );
+  const isProjectMember = project.members.some(
+    (member) => member.userId === currentUser.id
+  );
+
+  if (!isProjectMember) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const task = await prisma.task.findFirst({
@@ -59,6 +63,7 @@ export async function PATCH(req: Request, context: RouteContext) {
     },
     select: {
       id: true,
+      assigneeId: true,
     },
   });
 
@@ -66,26 +71,79 @@ export async function PATCH(req: Request, context: RouteContext) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  const body = await req.json();
+  const isOwner = project.ownerId === currentUser.id;
+  const isAssignee = task.assigneeId === currentUser.id;
 
-  const parsed = updateTaskSchema.safeParse(body);
-
-  if (!parsed.success) {
+  if (!isOwner && !isAssignee) {
     return NextResponse.json(
-      { error: "Invalid task data" },
-      { status: 400 }
+      { error: "Only the owner or assignee can update this task" },
+      { status: 403 }
     );
   }
 
-  const { title, description, assigneeId, dueDate, priority, status } =
-    parsed.data;
+  const body = await req.json();
 
-  if (
-    assigneeId &&
-    !project.members.some((member) => member.userId === assigneeId)
-  ) {
+  if (isOwner) {
+    const parsed = updateTaskSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid task data" },
+        { status: 400 }
+      );
+    }
+
+    const { title, description, assigneeId, dueDate, priority, status } =
+      parsed.data;
+
+    if (
+      assigneeId &&
+      !project.members.some((member) => member.userId === assigneeId)
+    ) {
+      return NextResponse.json(
+        { error: "Assignee must be a project member" },
+        { status: 400 }
+      );
+    }
+
+    const updatedTask = await prisma.task.update({
+      where: {
+        id: taskId,
+      },
+      data: {
+        title,
+        description: description || undefined,
+        assigneeId: assigneeId || null,
+        dueDate: dueDate ? new Date(dueDate) : null,
+        priority,
+        status,
+      },
+      include: {
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(updatedTask);
+  }
+
+  const parsedStatus = updateTaskStatusSchema.safeParse(body);
+
+  if (!parsedStatus.success) {
     return NextResponse.json(
-      { error: "Assignee must be a project member" },
+      { error: "You can only update task status" },
       { status: 400 }
     );
   }
@@ -95,12 +153,7 @@ export async function PATCH(req: Request, context: RouteContext) {
       id: taskId,
     },
     data: {
-      title,
-      description: description || undefined,
-      assigneeId: assigneeId || null,
-      dueDate: dueDate ? new Date(dueDate) : null,
-      priority,
-      status,
+      status: parsedStatus.data.status,
     },
     include: {
       assignee: {

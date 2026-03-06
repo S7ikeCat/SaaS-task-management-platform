@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { EditTaskForm } from "@/features/edit-task/ui/edit-task-form";
 import { DeleteTaskButton } from "@/features/delete-task/ui/delete-task-button";
+import { UpdateTaskStatusSelect } from "@/features/update-task-status/ui/update-task-status-select";
 
 type Member = {
   id: string;
@@ -28,9 +29,15 @@ type Props = {
   projectId: string;
   members: Member[];
   isOwner: boolean;
+  currentUserId: string;
 };
 
-export function TaskList({ projectId, members, isOwner }: Props) {
+export function TaskList({
+  projectId,
+  members,
+  isOwner,
+  currentUserId,
+}: Props) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -65,58 +72,103 @@ export function TaskList({ projectId, members, isOwner }: Props) {
 
   return (
     <div className="space-y-3">
-      {tasks.map((task) => (
-        <div key={task.id} className="rounded-xl border p-4 space-y-3">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="font-semibold">{task.title}</h3>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full border px-3 py-1">
-                {task.status}
-              </span>
-              <span className="rounded-full border px-3 py-1">
-                {task.priority}
-              </span>
+      {tasks.map((task) => {
+        const canUpdateStatus =
+          isOwner || task.assignee?.id === currentUserId;
+
+        return (
+          <div key={task.id} className="rounded-xl border p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="font-semibold">{task.title}</h3>
+
+              <div className="flex flex-wrap gap-2 text-xs">
+                {canUpdateStatus ? (
+                  <UpdateTaskStatusSelect
+                    projectId={projectId}
+                    taskId={task.id}
+                    currentStatus={task.status}
+                  />
+                ) : (
+                  <span className="rounded-full border px-3 py-1">
+                    {task.status}
+                  </span>
+                )}
+
+                <span className="rounded-full border px-3 py-1">
+                  {task.priority}
+                </span>
+              </div>
             </div>
-          </div>
 
-          <p className="text-sm text-gray-500">
-            {task.description || "No description"}
-          </p>
+            <p className="text-sm text-gray-500">
+              {task.description || "No description"}
+            </p>
 
-          <div className="flex flex-wrap gap-4 text-sm text-gray-400">
-            <span>
-              Assignee: {task.assignee?.name ?? task.assignee?.email ?? "Unassigned"}
-            </span>
-            <span>
+            <div className="flex flex-wrap gap-4 text-sm text-gray-400">
+              <span>
+                Assignee: {task.assignee?.name ?? task.assignee?.email ?? "Unassigned"}
+              </span>
+
+              <span>
   Due: {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "—"}
 
-  {task.dueDate &&
-    new Date(task.dueDate) < new Date() &&
-    task.status !== "DONE" && (
-      <span className="ml-2 text-xs text-red-500">
-        ⚠ overdue
-      </span>
-    )}
-</span>
-          </div>
+  {task.dueDate && task.status !== "DONE" && (() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-          {isOwner ? (
-            <div className="flex flex-wrap gap-2">
-              <EditTaskForm
-                projectId={projectId}
-                task={task}
-                members={members}
-                isOwner={isOwner}
-              />
-              <DeleteTaskButton
-                projectId={projectId}
-                taskId={task.id}
-                isOwner={isOwner}
-              />
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const dueDate = new Date(task.dueDate);
+    dueDate.setHours(0, 0, 0, 0);
+
+    if (dueDate < today) {
+      return (
+        <span className="ml-2 text-xs text-red-500">
+          ⚠ overdue
+        </span>
+      );
+    }
+
+    if (dueDate.getTime() === today.getTime()) {
+      return (
+        <span className="ml-2 text-xs text-yellow-400">
+          ⏰ due today
+        </span>
+      );
+    }
+
+    if (dueDate.getTime() === tomorrow.getTime()) {
+      return (
+        <span className="ml-2 text-xs text-blue-400">
+          📌 due tomorrow
+        </span>
+      );
+    }
+
+    return null;
+  })()}
+</span>
             </div>
-          ) : null}
-        </div>
-      ))}
+
+            {isOwner ? (
+              <div className="flex flex-wrap gap-2">
+                <EditTaskForm
+                  projectId={projectId}
+                  task={task}
+                  members={members}
+                  isOwner={isOwner}
+                />
+                <DeleteTaskButton
+                  projectId={projectId}
+                  taskId={task.id}
+                  isOwner={isOwner}
+                />
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
     </div>
   );
 }

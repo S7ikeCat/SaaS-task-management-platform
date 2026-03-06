@@ -17,5 +17,10 @@ export const updateTaskSchema = z.object({
   status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE"]),
 });
 
+export const updateTaskStatusSchema = z.object({
+  status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "DONE"]),
+});
+
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type UpdateTaskStatusInput = z.infer<typeof updateTaskStatusSchema>;
