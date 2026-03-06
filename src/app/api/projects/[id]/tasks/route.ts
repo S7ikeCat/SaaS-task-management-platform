@@ -6,6 +6,9 @@ import { prisma } from "@/shared/lib/prisma";
 import { createTaskSchema } from "@/shared/lib/validations/task";
 import { taskService } from "@/entities/task/model/task.service";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type RouteContext = {
   params: Promise<{
     id: string;
@@ -50,7 +53,13 @@ export async function GET(_: Request, context: RouteContext) {
 
   const tasks = await taskService.getProjectTasks(projectId, user.id);
 
-  return NextResponse.json(tasks);
+  return NextResponse.json(tasks, {
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
+  });
 }
 
 export async function POST(req: Request, context: RouteContext) {

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 type Props = {
   projectId: string;
@@ -16,9 +17,18 @@ export function DeleteTaskButton({ projectId, taskId, isOwner }: Props) {
   }
 
   async function onDelete() {
-    const confirmed = window.confirm("Delete this task?");
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Delete task?",
+      text: "This action cannot be undone.",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#2563eb",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+    });
 
-    if (!confirmed) {
+    if (!result.isConfirmed) {
       return;
     }
 
@@ -31,13 +41,29 @@ export function DeleteTaskButton({ projectId, taskId, isOwner }: Props) {
 
       if (!response.ok) {
         const data = await response.json();
-        alert(data.error || "Failed to delete task");
+        await Swal.fire({
+          icon: "error",
+          title: "Failed to delete task",
+          text: data.error || "Something went wrong",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
 
+      await Swal.fire({
+        icon: "success",
+        title: "Task deleted",
+        confirmButtonColor: "#2563eb",
+      });
+
       window.location.reload();
     } catch {
-      alert("Something went wrong");
+      await Swal.fire({
+        icon: "error",
+        title: "Something went wrong",
+        text: "Please try again",
+        confirmButtonColor: "#2563eb",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +74,7 @@ export function DeleteTaskButton({ projectId, taskId, isOwner }: Props) {
       type="button"
       onClick={onDelete}
       disabled={isLoading}
-      className="rounded-lg border px-3 py-2 text-xs hover:bg-white/5"
+      className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
     >
       {isLoading ? "Deleting..." : "Delete"}
     </button>

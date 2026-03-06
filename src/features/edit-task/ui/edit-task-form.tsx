@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 type Member = {
   id: string;
@@ -39,7 +40,6 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
   );
   const [priority, setPriority] = useState(task.priority);
   const [status, setStatus] = useState(task.status);
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOwner) {
@@ -48,10 +48,13 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
 
     if (!title.trim()) {
-      setError("Task title is required");
+      await Swal.fire({
+        icon: "warning",
+        title: "Task title is required",
+        confirmButtonColor: "#2563eb",
+      });
       return;
     }
 
@@ -76,13 +79,29 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to update task");
+        await Swal.fire({
+          icon: "error",
+          title: "Failed to update task",
+          text: data.error || "Something went wrong",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
 
+      await Swal.fire({
+        icon: "success",
+        title: "Task updated",
+        confirmButtonColor: "#2563eb",
+      });
+
       window.location.reload();
     } catch {
-      setError("Something went wrong");
+      await Swal.fire({
+        icon: "error",
+        title: "Something went wrong",
+        text: "Please try again",
+        confirmButtonColor: "#2563eb",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -93,26 +112,29 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="rounded-lg border px-3 py-2 text-xs hover:bg-white/5"
+        className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
       >
         {isOpen ? "Cancel" : "Edit"}
       </button>
 
       {isOpen ? (
-        <form onSubmit={onSubmit} className="rounded-xl border p-4 space-y-4">
+        <form
+          onSubmit={onSubmit}
+          className="space-y-5 rounded-3xl border border-slate-200 bg-slate-50 p-5"
+        >
           <div className="space-y-2">
-            <label className="text-sm font-medium">Title</label>
+            <label className="text-sm font-medium text-slate-700">Title</label>
             <input
-              className="w-full rounded-lg border px-3 py-2"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Description</label>
+            <label className="text-sm font-medium text-slate-700">Description</label>
             <textarea
-              className="min-h-25 w-full rounded-lg border px-3 py-2"
+              className="min-h-25 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
@@ -120,9 +142,9 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
 
           <div className="grid gap-4 md:grid-cols-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Assignee</label>
+              <label className="text-sm font-medium text-slate-700">Assignee</label>
               <select
-                className="w-full rounded-lg border px-3 py-2"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
                 value={assigneeId}
                 onChange={(e) => setAssigneeId(e.target.value)}
               >
@@ -136,9 +158,9 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Due date</label>
+              <label className="text-sm font-medium text-slate-700">Due date</label>
               <input
-                className="w-full rounded-lg border px-3 py-2"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
@@ -146,9 +168,9 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Priority</label>
+              <label className="text-sm font-medium text-slate-700">Priority</label>
               <select
-                className="w-full rounded-lg border px-3 py-2"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
                 value={priority}
                 onChange={(e) =>
                   setPriority(e.target.value as "LOW" | "MEDIUM" | "HIGH" | "URGENT")
@@ -162,9 +184,9 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
+              <label className="text-sm font-medium text-slate-700">Status</label>
               <select
-                className="w-full rounded-lg border px-3 py-2"
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500"
                 value={status}
                 onChange={(e) =>
                   setStatus(
@@ -180,12 +202,10 @@ export function EditTaskForm({ projectId, task, members, isOwner }: Props) {
             </div>
           </div>
 
-          {error ? <p className="text-sm text-red-500">{error}</p> : null}
-
           <button
             type="submit"
             disabled={isLoading}
-            className="rounded-lg border px-4 py-2 font-medium"
+            className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             {isLoading ? "Saving..." : "Save changes"}
           </button>

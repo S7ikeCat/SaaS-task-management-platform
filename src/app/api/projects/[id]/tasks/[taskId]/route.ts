@@ -83,25 +83,18 @@ export async function PATCH(req: Request, context: RouteContext) {
 
   const body = await req.json();
 
-  if (isOwner) {
-    const parsed = updateTaskSchema.safeParse(body);
+  const bodyKeys = Object.keys(body);
 
-    if (!parsed.success) {
+  // status-only update: разрешён owner и assignee
+  const isStatusOnlyUpdate =
+    bodyKeys.length === 1 && bodyKeys[0] === "status";
+
+  if (isStatusOnlyUpdate) {
+    const parsedStatus = updateTaskStatusSchema.safeParse(body);
+
+    if (!parsedStatus.success) {
       return NextResponse.json(
-        { error: "Invalid task data" },
-        { status: 400 }
-      );
-    }
-
-    const { title, description, assigneeId, dueDate, priority, status } =
-      parsed.data;
-
-    if (
-      assigneeId &&
-      !project.members.some((member) => member.userId === assigneeId)
-    ) {
-      return NextResponse.json(
-        { error: "Assignee must be a project member" },
+        { error: "Invalid status data" },
         { status: 400 }
       );
     }
@@ -111,12 +104,7 @@ export async function PATCH(req: Request, context: RouteContext) {
         id: taskId,
       },
       data: {
-        title,
-        description: description || undefined,
-        assigneeId: assigneeId || null,
-        dueDate: dueDate ? new Date(dueDate) : null,
-        priority,
-        status,
+        status: parsedStatus.data.status,
       },
       include: {
         assignee: {
@@ -139,11 +127,32 @@ export async function PATCH(req: Request, context: RouteContext) {
     return NextResponse.json(updatedTask);
   }
 
-  const parsedStatus = updateTaskStatusSchema.safeParse(body);
-
-  if (!parsedStatus.success) {
+  // полное редактирование: только owner
+  if (!isOwner) {
     return NextResponse.json(
-      { error: "You can only update task status" },
+      { error: "Only the owner can fully edit a task" },
+      { status: 403 }
+    );
+  }
+
+  const parsed = updateTaskSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid task data" },
+      { status: 400 }
+    );
+  }
+
+  const { title, description, assigneeId, dueDate, priority, status } =
+    parsed.data;
+
+  if (
+    assigneeId &&
+    !project.members.some((member) => member.userId === assigneeId)
+  ) {
+    return NextResponse.json(
+      { error: "Assignee must be a project member" },
       { status: 400 }
     );
   }
@@ -153,7 +162,12 @@ export async function PATCH(req: Request, context: RouteContext) {
       id: taskId,
     },
     data: {
-      status: parsedStatus.data.status,
+      title,
+      description: description || undefined,
+      assigneeId: assigneeId || null,
+      dueDate: dueDate ? new Date(dueDate) : null,
+      priority,
+      status,
     },
     include: {
       assignee: {

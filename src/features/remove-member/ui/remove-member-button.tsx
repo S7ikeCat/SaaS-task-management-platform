@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 type Props = {
   projectId: string;
@@ -11,11 +12,18 @@ export function RemoveMemberButton({ projectId, memberId }: Props) {
   const [isLoading, setIsLoading] = useState(false);
 
   async function onRemove() {
-    const confirmed = window.confirm(
-      "Remove this participant from the project? All tasks assigned to this user in this project will be deleted."
-    );
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Remove participant?",
+      text: "All tasks assigned to this user in this project will be deleted.",
+      showCancelButton: true,
+      confirmButtonColor: "#dc2626",
+      cancelButtonColor: "#2563eb",
+      confirmButtonText: "Remove",
+      cancelButtonText: "Cancel",
+    });
 
-    if (!confirmed) {
+    if (!result.isConfirmed) {
       return;
     }
 
@@ -31,13 +39,29 @@ export function RemoveMemberButton({ projectId, memberId }: Props) {
 
       if (!response.ok) {
         const data = await response.json();
-        alert(data.error || "Failed to remove participant");
+        await Swal.fire({
+          icon: "error",
+          title: "Failed to remove participant",
+          text: data.error || "Something went wrong",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
 
+      await Swal.fire({
+        icon: "success",
+        title: "Participant removed",
+        confirmButtonColor: "#2563eb",
+      });
+
       window.location.reload();
     } catch {
-      alert("Something went wrong");
+      await Swal.fire({
+        icon: "error",
+        title: "Something went wrong",
+        text: "Please try again",
+        confirmButtonColor: "#2563eb",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -48,7 +72,7 @@ export function RemoveMemberButton({ projectId, memberId }: Props) {
       type="button"
       onClick={onRemove}
       disabled={isLoading}
-      className="rounded-lg border px-3 py-2 text-xs hover:bg-white/5"
+      className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 transition hover:bg-red-100"
     >
       {isLoading ? "Removing..." : "Remove"}
     </button>

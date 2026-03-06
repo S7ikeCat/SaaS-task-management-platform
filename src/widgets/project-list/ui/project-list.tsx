@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { FiCheckCircle, FiClock } from "react-icons/fi";
 
 type Project = {
   id: string;
@@ -32,29 +33,30 @@ export function ProjectList() {
   }, []);
 
   if (isLoading) {
-    return <p>Loading projects...</p>;
+    return <p className="text-slate-500">Loading projects...</p>;
   }
 
   return (
     <div className="space-y-8">
-      {/* Active projects */}
       <div className="space-y-3">
-        <h2 className="text-xl font-semibold">Active Projects</h2>
+        <div className="flex items-center gap-2">
+          <FiClock className="text-blue-600" />
+          <h3 className="text-base font-semibold text-slate-900">Active Projects</h3>
+        </div>
 
         {activeProjects.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
             No active projects yet.
-          </p>
+          </div>
         ) : (
           activeProjects.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="block rounded-xl border p-4 transition hover:bg-white/5"
+              className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:-translate-y-0.5 hover:bg-slate-100"
             >
-              <h3 className="font-semibold">{project.name}</h3>
-
-              <p className="text-sm text-gray-500 mt-1">
+              <h4 className="font-semibold text-slate-900">{project.name}</h4>
+              <p className="mt-1 text-sm text-slate-500">
                 {project.description || "No description"}
               </p>
             </Link>
@@ -62,30 +64,30 @@ export function ProjectList() {
         )}
       </div>
 
-      {/* Completed projects */}
       <div className="space-y-3">
-        <h2 className="text-xl font-semibold">Completed Projects</h2>
+        <div className="flex items-center gap-2">
+          <FiCheckCircle className="text-emerald-600" />
+          <h3 className="text-base font-semibold text-slate-900">
+            Completed Projects
+          </h3>
+        </div>
 
         {completedProjects.length === 0 ? (
-          <p className="text-sm text-gray-500">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
             No completed projects yet.
-          </p>
+          </div>
         ) : (
           completedProjects.map((project) => (
             <Link
               key={project.id}
               href={`/projects/${project.id}`}
-              className="block rounded-xl border p-4 opacity-70 transition hover:bg-white/5"
+              className="block rounded-2xl border border-slate-200 bg-slate-50 p-4 opacity-80 transition hover:bg-slate-100"
             >
-              <h3 className="font-semibold">{project.name}</h3>
-
-              <p className="text-sm text-gray-500 mt-1">
+              <h4 className="font-semibold text-slate-900">{project.name}</h4>
+              <p className="mt-1 text-sm text-slate-500">
                 {project.description || "No description"}
               </p>
-
-              <p className="text-xs text-green-500 mt-2">
-                Completed
-              </p>
+              <p className="mt-2 text-xs font-medium text-emerald-600">Completed</p>
             </Link>
           ))
         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 type Member = {
   id: string;
@@ -19,15 +20,17 @@ export function CreateTaskForm({ projectId, members }: Props) {
   const [assigneeId, setAssigneeId] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState("MEDIUM");
-  const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setError("");
 
     if (!title.trim()) {
-      setError("Task title is required");
+      await Swal.fire({
+        icon: "warning",
+        title: "Task title is required",
+        confirmButtonColor: "#2563eb",
+      });
       return;
     }
 
@@ -51,7 +54,12 @@ export function CreateTaskForm({ projectId, members }: Props) {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to create task");
+        await Swal.fire({
+          icon: "error",
+          title: "Failed to create task",
+          text: data.error || "Something went wrong",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
 
@@ -61,94 +69,106 @@ export function CreateTaskForm({ projectId, members }: Props) {
       setDueDate("");
       setPriority("MEDIUM");
 
+      await Swal.fire({
+        icon: "success",
+        title: "Task created",
+        text: "The task has been added to the project",
+        confirmButtonColor: "#2563eb",
+      });
+
       window.location.reload();
     } catch {
-      setError("Something went wrong");
+      await Swal.fire({
+        icon: "error",
+        title: "Something went wrong",
+        text: "Please try again",
+        confirmButtonColor: "#2563eb",
+      });
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <form onSubmit={onSubmit} className="rounded-xl border p-5 space-y-4">
-      <div>
-        <h2 className="text-2xl font-semibold">Create task</h2>
-        <p className="mt-1 text-sm text-gray-500">
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="mb-5">
+        <h2 className="text-xl font-semibold text-slate-900">Create task</h2>
+        <p className="mt-1 text-sm text-slate-500">
           Add a task inside this project
         </p>
       </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Title</label>
-        <input
-          className="w-full rounded-lg border px-3 py-2"
-          placeholder="Implement auth flow"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Description</label>
-        <textarea
-          className="min-h-25 w-full rounded-lg border px-3 py-2"
-          placeholder="Task details"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
+      <form onSubmit={onSubmit} className="space-y-5">
         <div className="space-y-2">
-          <label className="text-sm font-medium">Assignee</label>
-          <select
-            className="w-full rounded-lg border px-3 py-2"
-            value={assigneeId}
-            onChange={(e) => setAssigneeId(e.target.value)}
-          >
-            <option value="">Unassigned</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name ?? member.email}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Due date</label>
+          <label className="text-sm font-medium text-slate-700">Title</label>
           <input
-            className="w-full rounded-lg border px-3 py-2"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+            placeholder="Implement auth flow"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Priority</label>
-          <select
-            className="w-full rounded-lg border px-3 py-2"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            <option value="LOW">LOW</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="HIGH">HIGH</option>
-            <option value="URGENT">URGENT</option>
-          </select>
+          <label className="text-sm font-medium text-slate-700">Description</label>
+          <textarea
+            className="min-h-30 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+            placeholder="Task details"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </div>
-      </div>
 
-      {error ? <p className="text-sm text-red-500">{error}</p> : null}
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Assignee</label>
+            <select
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+              value={assigneeId}
+              onChange={(e) => setAssigneeId(e.target.value)}
+            >
+              <option value="">Unassigned</option>
+              {members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name ?? member.email}
+                </option>
+              ))}
+            </select>
+          </div>
 
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="rounded-lg border px-4 py-2 font-medium"
-      >
-        {isLoading ? "Creating..." : "Create task"}
-      </button>
-    </form>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Due date</label>
+            <input
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-700">Priority</label>
+            <select
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-blue-500 focus:bg-white"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+            >
+              <option value="LOW">LOW</option>
+              <option value="MEDIUM">MEDIUM</option>
+              <option value="HIGH">HIGH</option>
+              <option value="URGENT">URGENT</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+        >
+          {isLoading ? "Creating..." : "Create task"}
+        </button>
+      </form>
+    </section>
   );
 }

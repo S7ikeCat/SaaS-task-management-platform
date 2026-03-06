@@ -48,7 +48,7 @@ export function UpdateTaskStatusSelect({
 
   return (
     <select
-      className="rounded-lg border px-3 py-2 text-xs"
+      className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-700 outline-none transition focus:border-blue-500"
       value={status}
       disabled={isLoading}
       onChange={(e) => onChange(e.target.value)}

@@ -1,14 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import Swal from "sweetalert2";
 
 export function CompleteProjectButton({ projectId }: { projectId: string }) {
   const [loading, setLoading] = useState(false);
 
   async function handleComplete() {
-    const confirm = window.confirm("Mark project as completed?");
+    const result = await Swal.fire({
+      icon: "question",
+      title: "Complete project?",
+      text: "The project will be moved to completed projects.",
+      showCancelButton: true,
+      confirmButtonColor: "#16a34a",
+      cancelButtonColor: "#2563eb",
+      confirmButtonText: "Complete",
+      cancelButtonText: "Cancel",
+    });
 
-    if (!confirm) return;
+    if (!result.isConfirmed) return;
 
     try {
       setLoading(true);
@@ -18,9 +28,19 @@ export function CompleteProjectButton({ projectId }: { projectId: string }) {
       });
 
       if (!res.ok) {
-        alert("Failed to complete project");
+        await Swal.fire({
+          icon: "error",
+          title: "Failed to complete project",
+          confirmButtonColor: "#2563eb",
+        });
         return;
       }
+
+      await Swal.fire({
+        icon: "success",
+        title: "Project completed",
+        confirmButtonColor: "#2563eb",
+      });
 
       window.location.reload();
     } finally {
@@ -31,7 +51,7 @@ export function CompleteProjectButton({ projectId }: { projectId: string }) {
   return (
     <button
       onClick={handleComplete}
-      className="rounded-lg border px-4 py-2 text-sm hover:bg-green-500/10"
+      className="rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
     >
       {loading ? "Completing..." : "Complete project"}
     </button>
