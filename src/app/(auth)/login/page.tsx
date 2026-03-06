@@ -1,6 +1,16 @@
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+
+import { authConfig } from "@/features/auth/model/auth.config";
 import { LoginForm } from "@/features/auth/ui/login-form";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const session = await getServerSession(authConfig);
+
+  if (session?.user?.email) {
+    redirect("/dashboard");
+  }
+
   return (
     <main className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4 py-10">
       <div className="grid w-full max-w-5xl overflow-hidden rounded-4xl border border-slate-200 bg-white shadow-xl lg:grid-cols-2">
