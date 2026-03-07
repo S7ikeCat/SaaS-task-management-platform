@@ -3,7 +3,7 @@
 ## 🌍 Production / Vercel
 
 **Сайт в проде:**
-https://saa-s-task-management-platform.vercel.app
+https://task-saas-tan.vercel.app/login
 
 Деплой выполнен на **Vercel**, приложение доступно по ссылке с любого устройства.
 
