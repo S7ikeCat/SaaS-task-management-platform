@@ -63,7 +63,7 @@ export function InviteMemberForm({ projectId, isOwner }: Props) {
         text: "The user has been added to the project",
         confirmButtonColor: "#2563eb",
       });
-
+      sessionStorage.setItem("scroll-y", String(window.scrollY));
       window.location.reload();
     } catch {
       await Swal.fire({

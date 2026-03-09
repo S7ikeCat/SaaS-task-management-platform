@@ -42,6 +42,7 @@ export function CompleteProjectButton({ projectId }: { projectId: string }) {
         confirmButtonColor: "#2563eb",
       });
 
+      sessionStorage.setItem("scroll-y", String(window.scrollY));
       window.location.reload();
     } finally {
       setLoading(false);

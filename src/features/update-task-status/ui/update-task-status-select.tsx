@@ -37,7 +37,7 @@ export function UpdateTaskStatusSelect({
         alert(data.error || "Failed to update status");
         return;
       }
-
+      sessionStorage.setItem("scroll-y", String(window.scrollY));
       window.location.reload();
     } catch {
       alert("Something went wrong");

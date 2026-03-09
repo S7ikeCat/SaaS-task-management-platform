@@ -53,7 +53,7 @@ export function RemoveMemberButton({ projectId, memberId }: Props) {
         title: "Participant removed",
         confirmButtonColor: "#2563eb",
       });
-
+      sessionStorage.setItem("scroll-y", String(window.scrollY));
       window.location.reload();
     } catch {
       await Swal.fire({

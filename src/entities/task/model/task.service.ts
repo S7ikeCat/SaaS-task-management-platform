@@ -2,7 +2,7 @@ import { prisma } from "@/shared/lib/prisma";
 
 export const taskService = {
   async getProjectTasks(projectId: string, userId: string) {
-    return prisma.task.findMany({
+    const tasks = await prisma.task.findMany({
       where: {
         projectId,
         project: {
@@ -28,13 +28,26 @@ export const taskService = {
             email: true,
           },
         },
+        subtasks: {
+          select: {
+            completed: true,
+          },
+        },
+        _count: {
+          select: {
+            comments: true,
+          },
+        },
       },
-      orderBy: [
-        { status: "asc" },
-        { order: "asc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ status: "asc" }, { order: "asc" }, { createdAt: "desc" }],
     });
+
+    return tasks.map(({ _count, subtasks, ...task }) => ({
+      ...task,
+      commentsCount: _count.comments,
+      subtasksTotal: subtasks.length,
+      subtasksCompleted: subtasks.filter((subtask) => subtask.completed).length,
+    }));
   },
 
   async createTask(data: {

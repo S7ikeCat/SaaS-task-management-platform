@@ -59,6 +59,7 @@ export function CreateProjectForm() {
         confirmButtonColor: "#2563eb",
       });
 
+      sessionStorage.setItem("scroll-y", String(window.scrollY));
       window.location.reload();
     } catch {
       await Swal.fire({
