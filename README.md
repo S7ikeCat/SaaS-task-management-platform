@@ -242,6 +242,18 @@ https://www.loom.com/share/3a5799c5ed0b4a1c8caa8cb3f1a0361a
 
 ---
 
+### ТЗ IRL
+
+![IRL](./screenshots/Task-TZ.png)
+
+---
+
+### Оценка IRL
+
+![assessment](./assessment.png)
+
+---
+
 # 📌 Дополнительная информация
 
 * Prisma Client генерируется автоматически (`postinstall`)
