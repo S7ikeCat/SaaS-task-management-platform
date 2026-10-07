@@ -234,11 +234,11 @@ NEXTAUTH_URL
 
 # 📽️ Демо-видео (Updated) 🆕
 
-https://www.loom.com/share/00728686bf0040069ab7f1a97df923d3
+https://www.loom.com/share/№№№№№№№№№№№№
 
 # 📽️ Демо-видео (Old)
 
-https://www.loom.com/share/3a5799c5ed0b4a1c8caa8cb3f1a0361a
+https://www.loom.com/share/№№№№№№№№№№№№
 
 ---
 
